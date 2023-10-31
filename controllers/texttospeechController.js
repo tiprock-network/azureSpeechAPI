@@ -5,15 +5,24 @@ const request = require('request')
 const audio_file='./public/synthesized/speechoutput.wav'
 
 const getAudioResponse= async (req,res) =>{
+    
+    let lang = req.query.lang
+    let dialect = req.query.dialect
+    let voicewav = req.query.voicewav
+    //make language default value
+    if(!lang) lang='en-US'
+    if(!dialect) dialect='en-US'
+    //default voice data
+    if(!voicewav) voicewav='fastfoodNairobi';
      
      const speechConfig = sdk.SpeechConfig.fromSubscription(process.env.API_KEY_SPEECH, process.env.API_SPEECH_REGION)
      const audioConfig = sdk.AudioConfig.fromAudioFileOutput(audio_file)
 
      //voice in preferred dialect
-     speechConfig.speechSynthesisVoiceName= 'en-KE-AsiliaNeural'
+     speechConfig.speechSynthesisVoiceName= `${dialect}`
      const synthesizer = new sdk.SpeechSynthesizer(speechConfig,audioConfig)
 
-    request('http://localhost:5001/api/completetext',async (error,response,body)=>{
+    request(`http://localhost:5001/api/completetext?voicewav=${voicewav}&lang=${lang}`,async (error,response,body)=>{
         const prompt=JSON.parse(body).response
         //start synthesizer and await results
         synthesizer.speakTextAsync(`${prompt}`,(result)=>{
